@@ -49,7 +49,7 @@ class SimpleDb(object):
         for name in self.__transactions.keys():
             if self.__num_open_transactions in self.__transactions[name]:
                 value = self.__transactions[name].pop(self.__num_open_transactions)
-                self.__transactions[name] or self.__transactions.pop(name)
+                _ = self.__transactions[name] or self.__transactions.pop(name)
                 self.__update_num_equal_to(value, self.get(name))
         self.__num_open_transactions -= 1
         return True
