@@ -184,7 +184,7 @@ def saveMovesCacheToFile(filename):
     outfile.close()
 
 
-def run(raw_input=raw_input):
+def run():
     "Reads in grid then returns x, y coordinate for next cell to collapse "
     numRows, numColumns, numColors = [int(value) for value in raw_input().strip().split()]
     bits = 0
@@ -204,6 +204,11 @@ def run(raw_input=raw_input):
 
     saveMovesCacheToFile(moves_cache_file)
 
+
+"""
+# Tests
+
+# Change run def to: def run(raw_input=raw_input):, then run
 
 def showGrid(grid):
     "Graphical representation of grid"
@@ -236,3 +241,4 @@ def fakeInput():
     return lambda: next(data)
 
 run(fakeInput())
+"""
