@@ -111,9 +111,9 @@ def getGroups(grid):
             if color != BLANK_CELL:
                 colorAppears[color] += 1
                 group = None
-                for position in [(x, y - 1, color), 
-                                 (x - 1, y, color), 
-                                 (x + 1, y, color), 
+                for position in [(x, y - 1, color),
+                                 (x - 1, y, color),
+                                 (x + 1, y, color),
                                  (x, y + 1, color)]:
                     if position in grouped and grouped[position] != group:
                         if group is None:
@@ -165,6 +165,7 @@ def getNextMove(grid):
 
     return best[:-1]
 
+
 def readMovesCacheFromFile(filename):
     "Reads MOVES_CACHE from file if file exists."
     global MOVES_CACHE
@@ -175,11 +176,13 @@ def readMovesCacheFromFile(filename):
     MOVES_CACHE = pickle.load(infile)
     infile.close()
 
+
 def saveMovesCacheToFile(filename):
     "Saves MOVES_CACHE to file to avoid recomputation across calls."
     outfile = open(filename, 'wb')
     pickle.dump(MOVES_CACHE, outfile, -1)
     outfile.close()
+
 
 def run(raw_input=raw_input):
     "Reads in grid then returns x, y coordinate for next cell to collapse "
@@ -192,13 +195,13 @@ def run(raw_input=raw_input):
             bits |= COLOR_TO_INDEX_MAPPING[row[y]] << xyToBitPosition(x, y, grid)
 
     grid = grid._replace(bits=bits)
-    
+
     moves_cache_file = 'JKJ_MOVES_CACHE'
     readMovesCacheFromFile(moves_cache_file)
 
     removeX, removeY = getNextMove(grid)
     print removeX, removeY
-    
+
     saveMovesCacheToFile(moves_cache_file)
 
 
@@ -229,7 +232,7 @@ def fakeInput():
             '''
 
     data = iter(board.strip().split('\n'))
-    
+
     return lambda: next(data)
 
 run(fakeInput())
