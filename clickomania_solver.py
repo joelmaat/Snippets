@@ -4,6 +4,7 @@
 
 from collections import namedtuple
 from heapq import heappush, heappop
+import pickle
 
 COLORS = '-ROYGBIV'
 COLOR_TO_INDEX_MAPPING = {v: i for i, v in enumerate(COLORS)}
@@ -110,7 +111,10 @@ def getGroups(grid):
             if color != BLANK_CELL:
                 colorAppears[color] += 1
                 group = None
-                for position in [(x, y - 1, color), (x - 1, y, color), (x + 1, y, color), (x, y + 1, color)]:
+                for position in [(x, y - 1, color), 
+                                 (x - 1, y, color), 
+                                 (x + 1, y, color), 
+                                 (x, y + 1, color)]:
                     if position in grouped and grouped[position] != group:
                         if group is None:
                             group = grouped[position]
@@ -136,7 +140,6 @@ def getIncrementalMoves(grid):
 
 def getNextMove(grid):
     "Returns x, y coordinate for next cell to collapse"
-    global MOVES_CACHE
     if grid in MOVES_CACHE:
         return MOVES_CACHE[grid]
     todo = []
@@ -160,8 +163,23 @@ def getNextMove(grid):
                 tried.add(ngrid)
                 heappush(todo, (collapsed - ncollapsed, ngrid, moves + [(nx, ny, ngrid)]))
 
-    return (x, y)
+    return best[:-1]
 
+def readMovesCacheFromFile(filename):
+    "Reads MOVES_CACHE from file if file exists."
+    global MOVES_CACHE
+    try:
+        infile = open(filename, 'rb')
+    except IOError:
+        return
+    MOVES_CACHE = pickle.load(infile)
+    infile.close()
+
+def saveMovesCacheToFile(filename):
+    "Saves MOVES_CACHE to file to avoid recomputation across calls."
+    outfile = open(filename, 'wb')
+    pickle.dump(MOVES_CACHE, outfile, -1)
+    outfile.close()
 
 def run(raw_input=raw_input):
     "Reads in grid then returns x, y coordinate for next cell to collapse "
@@ -174,28 +192,14 @@ def run(raw_input=raw_input):
             bits |= COLOR_TO_INDEX_MAPPING[row[y]] << xyToBitPosition(x, y, grid)
 
     grid = grid._replace(bits=bits)
-
-    '''
-    global grid
-    cProfile.run('removeX, removeY = getNextMove(grid)', 'comstats')
-    p = pstats.Stats('comstats')
-    p.strip_dirs().sort_stats('cumulative').print_stats()
-
-    showGrid(grid)
-    print
-    while grid.bits != BLANK_GRID_BITS:
-        removeX, removeY = getNextMove(grid)
-        for _, x, y, ngrid in getIncrementalMoves(grid):
-            if (x, y) == (removeX, removeY):
-                grid = ngrid
-                break
-        showGrid(grid)
-        print
-    '''
+    
+    moves_cache_file = 'JKJ_MOVES_CACHE'
+    readMovesCacheFromFile(moves_cache_file)
 
     removeX, removeY = getNextMove(grid)
-
     print removeX, removeY
+    
+    saveMovesCacheToFile(moves_cache_file)
 
 
 def showGrid(grid):
@@ -224,8 +228,8 @@ def fakeInput():
             GIYBGIGIGYIGIYYYIYYY
             '''
 
-    data = iter(board.split('\n'))
-
+    data = iter(board.strip().split('\n'))
+    
     return lambda: next(data)
 
 run(fakeInput())
