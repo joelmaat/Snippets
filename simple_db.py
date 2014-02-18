@@ -135,32 +135,34 @@ def run(get_input=raw_input):
 
 run()
 
-##Tests
-##
-##def fakeInput(commands=None):
-##    "Allows faking of stdin data."
-##    def fromRawInput():
-##        """
-##        Pass-thru for raw_input() (loops forever requesting data from raw_input()) that additionally
-##        splits each raw_input() result on newlines. Without this raw_input() could potentially
-##        return something like 'set a 1\nend' rather than 'set a 1' then 'end'.
-##        """
-##        while True:
-##            for line in raw_input().split('\n'):
-##                yield line
-##    data = iter(commands.split('\n')) if commands else fromRawInput()
-##    return lambda: next(data)
-##
-##
-### 10 NULL 2 0 1 10 20 10 NULL 40 NO TRANSACTION 50 NULL 60 60 1 0 1
-##run(fakeInput("SET ex 10 \n GET ex \n ""UNSET ex \n GET ex \n END"))
-##run(fakeInput("SET a 10 \n SET b 10 \n NUMEQUALTO 10 \n NUMEQUALTO 20 \n SET b 30 \n "
-##              "NUMEQUALTO 10 \n END"))
-##run(fakeInput("BEGIN \n SET a 10 \n GET a \n BEGIN \n SET a 20 \n GET a \n ROLLBACK \n "
-##              "GET a \n ROLLBACK \n GET a \n END"))
-##run(fakeInput("BEGIN \n SET a 30 \n BEGIN \n SET a 40 \n COMMIT \n GET a \n ROLLBACK \n END"))
-##run(fakeInput("SET a 50 \n BEGIN \n GET a \n SET a 60 \n BEGIN \n UNSET a \n GET a \n "
-##              "ROLLBACK \n GET a \n COMMIT \n GET a \n END"))
-##run(fakeInput("SET a 10 \n BEGIN \n NUMEQUALTO 10 \n BEGIN \n UNSET a \n NUMEQUALTO 10 \n "
-##              "ROLLBACK \n NUMEQUALTO 10 \n COMMIT \n END"))
-##run(fakeInput())
+"""
+# Tests
+
+def fakeInput(commands=None):
+    "Allows faking of stdin data."
+    def fromRawInput():
+        '''
+        Pass-thru for raw_input() (loops forever requesting data from raw_input()) that additionally
+        splits each raw_input() result on newlines. Without this raw_input() could potentially
+        return something like 'set a 1\nend' rather than 'set a 1' then 'end'.
+        '''
+        while True:
+            for line in raw_input().split('\n'):
+                yield line
+    data = iter(commands.split('\n')) if commands else fromRawInput()
+    return lambda: next(data)
+
+
+# 10 NULL 2 0 1 10 20 10 NULL 40 NO TRANSACTION 50 NULL 60 60 1 0 1
+run(fakeInput("SET ex 10 \n GET ex \n ""UNSET ex \n GET ex \n END"))
+run(fakeInput("SET a 10 \n SET b 10 \n NUMEQUALTO 10 \n NUMEQUALTO 20 \n SET b 30 \n "
+              "NUMEQUALTO 10 \n END"))
+run(fakeInput("BEGIN \n SET a 10 \n GET a \n BEGIN \n SET a 20 \n GET a \n ROLLBACK \n "
+              "GET a \n ROLLBACK \n GET a \n END"))
+run(fakeInput("BEGIN \n SET a 30 \n BEGIN \n SET a 40 \n COMMIT \n GET a \n ROLLBACK \n END"))
+run(fakeInput("SET a 50 \n BEGIN \n GET a \n SET a 60 \n BEGIN \n UNSET a \n GET a \n "
+              "ROLLBACK \n GET a \n COMMIT \n GET a \n END"))
+run(fakeInput("SET a 10 \n BEGIN \n NUMEQUALTO 10 \n BEGIN \n UNSET a \n NUMEQUALTO 10 \n "
+              "ROLLBACK \n NUMEQUALTO 10 \n COMMIT \n END"))
+run(fakeInput())
+"""
