@@ -128,15 +128,17 @@ def process_command(simpleDb, command):
     return True
 
 
-def run(get_input=raw_input):
+def run():
     "Reads commands from the command line and passes them through for processing."
     simpleDb = SimpleDb()
-    all(iter(lambda: process_command(simpleDb, get_input()), False))
+    all(iter(lambda: process_command(simpleDb, raw_input()), False))
 
 run()
 
 """
 # Tests
+
+# Change run def to: def run(raw_input=raw_input):, then run
 
 def fakeInput(commands=None):
     "Allows faking of stdin data."
