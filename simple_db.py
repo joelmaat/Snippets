@@ -15,7 +15,7 @@ class SimpleDb(object):
         self.__transactions = {}
         self.__transaction_value_frequency = {}
 
-    def assign(self, name, value):
+    def put(self, name, value):
         "Inserts/updates value of name in database."
         self.__update_value(name, value)
 
@@ -110,7 +110,7 @@ OPS = {
     'ROLLBACK':   (1, lambda db:              db.rollback() or display("NO TRANSACTION")),
     'COMMIT':     (1, lambda db:              db.commit() or display("NO TRANSACTION")),
     'END':        (1, lambda db:              False),
-    'SET':        (3, lambda db, name, value: db.assign(name, value)),
+    'SET':        (3, lambda db, name, value: db.put(name, value)),
 }
 
 
