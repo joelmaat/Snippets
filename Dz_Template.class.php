@@ -384,7 +384,7 @@ class Dz_Template
      */
     function trigger_error($error_msg, $error_type = E_USER_WARNING)
     {
-        if ($show_error_msg == true)
+        if ($this->show_error_msg == true)
         {
             trigger_error("Dz_Template error: $error_msg", $error_type);
         }
