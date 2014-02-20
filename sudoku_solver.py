@@ -16,8 +16,8 @@ def is_value_repeated(row):
 
 def get_square(grid, r_index, c_index):
     return (grid[r_index][c_index:c_index + 3]
-                + grid[r_index + 1][c_index:c_index + 3]
-                + grid[r_index + 2][c_index:c_index + 3])
+            + grid[r_index + 1][c_index:c_index + 3] 
+            + grid[r_index + 2][c_index:c_index + 3])
 
 
 def get_s_index(r_index, c_index):
@@ -106,7 +106,7 @@ def generate_puzzle():
     puzzle = [[0] * dimension for _ in xrange(dimension)]
     available = range(dimension * dimension)
     rows, columns, squares = [[set(xrange(1, dimension + 1)) for _ in xrange(dimension)]
-                               for _ in xrange(3)]
+                              for _ in xrange(3)]
     for _ in xrange(max_num_cells_to_populate):
         index = random.randrange(len(available))
         available.pop(index)
