@@ -214,8 +214,7 @@ class Dz_Template
                                               .$this->template_sub." LIMIT 1");
         }
 
-        if (((isset($template['datecheck']))
-                AND ($template['datecheck'] > 0))
+        if ((isset($template['datecheck']) AND ($template['datecheck'] > 0))
                 OR ($this->use_cache == false))
         {
             $template['compiled'] = $this->compile($template['raw']);
@@ -358,10 +357,12 @@ class Dz_Template
             {
                 $this->compiled_template = $this->compile($this->template);
             }
+            
             if ($this->evaled_template == $this->undefined)
             {
                 $this->evaled_template = $this->evaluate($this->compiled_template);
             }
+            
             return $this->evaled_template;
         }
 
@@ -383,7 +384,7 @@ class Dz_Template
      */
     function trigger_error($error_msg, $error_type = E_USER_WARNING)
     {
-        if ($_show_error_msg == true)
+        if ($show_error_msg == true)
         {
             trigger_error("Dz_Template error: $error_msg", $error_type);
         }
