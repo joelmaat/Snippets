@@ -1,3 +1,5 @@
+"Solver for 9x9 Sudoku puzzles."
+
 import random
 
 
