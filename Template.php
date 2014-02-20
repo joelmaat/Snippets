@@ -1,7 +1,7 @@
 <?php
 /**
  * Project:     (D)ivision By (Z)ero Web
- * File:        Template.class.php
+ * File:        Template.php
  *
  * Simple templating engine.
  *
@@ -26,11 +26,12 @@
  *
  * PHP version 5.3
  *
+ * @category  Dz
  * @package   Dz
- * @author Joel Johnson <me@joelster.com>
+ * @author    Joel Johnson <me@joelster.com>
  * @copyright 2003 Team 229, Division By Zero
  * @license   http://opensource.org/licenses/gpl-license.php  GNU Public License
- * @version 0.1
+ * @version   0.1
  */
 
 namespace Dz;
@@ -38,11 +39,12 @@ namespace Dz;
 /**
  * Simple templating engine.
  *
+ * @category  Dz
  * @package   Dz
- * @author Joel Johnson <me@joelster.com>
+ * @author    Joel Johnson <me@joelster.com>
  * @copyright 2003 Team 229, Division By Zero
  * @license   http://opensource.org/licenses/gpl-license.php  GNU Public License
- * @version 0.1
+ * @version   0.1
  */
 class Template
 {
@@ -50,27 +52,28 @@ class Template
     /**
      * Should a message be printed to the browser in the even of an error.
      *
-     * @var bool
+     * @var boolean
      */
-    protected $_showErrorMsg = TRUE;
+    protected $showErrorMsg = true;
 
     /**
      * Should compiled templates be cached.
      *
-     * @var bool
+     * @var boolean
      */
-    public $useCache = TRUE;
+    public $useCache = true;
 
     /**
-     * If TRUE, then if statements will check the existence of a variable before printing it.
-     * So <var name="books"> will be translated to:
-     *     <?php if ($this->_vars[books]) { echo $this->_vars[books]; } ?>
-     * rather than:
-     *     <?php echo $this->_vars[books]; ?>
+     * If true, then if statements will check the existence of a variable before printing it.
      *
-     * @var bool
+     * So <var name="books"> will be translated to:
+     *     <?php if ($this->vars[books]) { echo $this->vars[books]; } ?>
+     * rather than:
+     *     <?php echo $this->vars[books]; ?>
+     *
+     * @var boolean
      */
-    public $safeCompiling = FALSE;
+    public $safeCompiling = false;
 
     /**
      * List of match patterns for placeholders (if, repeater, etc) in template.
@@ -87,61 +90,61 @@ class Template
     public $replaceRegex = array();
 
     /**
-     * Alias for NULL.
+     * Alias for null.
      *
-     * @var NULL
+     * @var null
      */
-    protected $_undefined = NULL;
+    protected $undefined = null;
 
     /**
      * Current template(s).
      *
      * @var string|string[]
      */
-    protected $template = NULL;
+    protected $template = null;
 
     /**
      * Compiled (custom syntax replaced with PHP code) template(s).
      *
      * @var string|string[]
      */
-    protected $_compiledTemplate = NULL;
+    protected $compiledTemplate = null;
 
     /**
      * Evaluated (placeholders replaced with actual values) template(s).
      *
      * @var string|string[]
      */
-    protected $_evaledTemplate = NULL;
+    protected $evaledTemplate = null;
 
     /**
      * Placeholder:replacement mapping.
      *
      * @var string[]
      */
-    protected $_vars = array();
+    protected $vars = array();
 
     /**
      * Should the list of vars be emptied on a call to _resetVars (if false just clears template
      * data).
      *
-     * @var bool
+     * @var boolean
      */
-    protected $_resetVars = TRUE;
+    protected $resetVars = true;
 
     /**
      * Name of variable to which database instance was assigned.
      *
      * @var string
      */
-    protected $_database = NULL;
+    protected $database = null;
 
     /**
      * Cached templates (to reduce database calls).
      *
      * @var string[]
      */
-    protected $_cachedTemplates = array();
+    protected $cachedTemplates = array();
 
     /**
      * Subset (or group) from which to pull requested template. This allows changing of styles
@@ -149,26 +152,24 @@ class Template
      *
      * @var integer
      */
-    protected $_templateSub = NULL;
+    protected $templateSub = null;
 
     /**
      * Constructor for the class.. it resets the variables if you told it to.
      *
      * @param string      $databaseHook  Name of variable to which database instance was assigned.
      * @param integer     $templateSub   Group to which templates belong.
-     * @param string|NULL $templatesList List of templates used in this execution.
-     * @param boolean     $_resetVars    Whether or not to reset the internal variables.
-     *
-     * @return void
+     * @param string|null $templatesList Comma seperated list of templates used in this execution.
+     * @param boolean     $resetVars     Whether or not to reset the internal variables.
      */
-    function __construct($databaseHook,
-                         $templateSub = 1,
-                         array $templatesList = NULL,
-                         $resetVars = TRUE)
+    public function __construct($databaseHook,
+                                $templateSub = 1,
+                                $templatesList = null,
+                                $resetVars = true)
     {
-        $this->_database     = $databaseHook;
-        $this->_templateSub  = intval($templateSub);
-        $this->_resetVars    = $resetVars;
+        $this->database     = $databaseHook;
+        $this->templateSub  = intval($templateSub);
+        $this->resetVars    = $resetVars;
 
         $this->findRegex    = array();
         $this->replaceRegex = array();
@@ -209,7 +210,7 @@ class Template
         $this->findRegex[]    = "'{var\s*name\s*=\s*[\"\']?(.*?)[\"\']?\s*}'ie";
         $this->replaceRegex[] = "\$this->compileVar('\\1')";
 
-        if ($templatesList != $this->_undefined)
+        if ($templatesList != $this->undefined)
         {
             $this->loadTemplates($templatesList);
         }
@@ -224,19 +225,19 @@ class Template
      */
     function setTemplate($template)
     {
-        $this->_template = $template;
+        $this->template = $template;
     }
 
     /**
      * set which template sub to use
      *
-     * @param integer $template contents of the template
+     * @param integer $sub Subset (or group) for templates.
      *
      * @return void
      */
     function setTemplateSub($sub)
     {
-        $this->_templateSub = intval($sub);
+        $this->templateSub = intval($sub);
     }
 
     /**
@@ -251,7 +252,7 @@ class Template
      */
     function loadTemplates($templatesList)
     {
-        $database = $this->_database;
+        $database = $this->database;
         global $$database;
 
 
@@ -261,12 +262,12 @@ class Template
         $temps = $$database->query("SELECT UNIX_TIMESTAMP(modifydate)-UNIX_TIMESTAMP(compiledate) "
                                        ."AS datecheck, name, raw, compiled FROM templates "
                                        ."WHERE name IN ('".$templatesList."') "
-                                       ."AND subid=".$this->_templateSub);
+                                       ."AND subid=".$this->templateSub);
 
 
         while ($temp = $$database->fetchArray($temps))
         {
-            $this->_cachedTemplates["$temp[name]"] = $this->cacheTemplate($temp);
+            $this->cachedTemplates["$temp[name]"] = $this->cacheTemplate($temp);
         }
 
         unset($temp);
@@ -278,14 +279,14 @@ class Template
      * compile and if so, it compiles the template and saves it to the database
      * otherwise, it just returns the compiled template.
      *
-     * @param array|string $template Template information to cache (if array) OR name of template
-     *                               to fetch and cache (if string).
+     * @param string[]|string $template Template information to cache (if array) OR name of
+     *                                  template to fetch and cache (if string).
      *
      * @return string Compiled template.
      */
     protected function cacheTemplate($template)
     {
-        $database = $this->_database;
+        $database = $this->database;
         global $$database;
 
         if (!is_array($template))
@@ -295,17 +296,17 @@ class Template
                                                    ."UNIX_TIMESTAMP(compiledate) AS datecheck, "
                                                    ."name, raw, compiled FROM templates WHERE "
                                                    ."name='".addslashes($template)."' AND subid="
-                                                   .$this->_templateSub." LIMIT 1");
+                                                   .$this->templateSub." LIMIT 1");
         }
 
         if ((isset($template['datecheck']) && ($template['datecheck'] > 0))
-                || ($this->useCache == FALSE))
+                || ($this->useCache == false))
         {
             $template['compiled'] = $this->compile($template['raw']);
             $$database->query("UPDATE templates SET compiledate=NOW(), compiled='"
                                   .addslashes($template['compiled'])
                                   ."' WHERE name='".addslashes($template['name'])."' AND subid="
-                                  .$this->_templateSub);
+                                  .$this->templateSub);
         }
 
         return $template['compiled'];
@@ -319,37 +320,37 @@ class Template
     protected function _resetVars()
     {
 
-        if ($this->_template)
+        if ($this->template)
         {
-            $this->_template = NULL;
+            $this->template = null;
         }
 
-        if ($this->_compiledTemplate)
+        if ($this->compiledTemplate)
         {
-            $this->_compiledTemplate = NULL;
+            $this->compiledTemplate = null;
         }
 
-        if ($this->_evaledTemplate)
+        if ($this->evaledTemplate)
         {
-            $this->_evaledTemplate = NULL;
+            $this->evaledTemplate = null;
         }
 
-        if (($this->_resetVars == TRUE) && ($this->_vars))
+        if (($this->resetVars == true) && ($this->vars))
         {
-            unset($this->_vars);
-            $this->_vars = array();
+            unset($this->vars);
+            $this->vars = array();
         }
     }
 
     /**
      * Assigns values to template variables.
      *
-     * @param array|string $varName The template variable name(s).
-     * @param mixed        $value   The value to assign.
+     * @param mixed[]|string $varName The template variable name(s).
+     * @param mixed          $value   The value to assign.
      *
      * @return void
      */
-    function assign($varName, $value = NULL)
+    function assign($varName, $value = null)
     {
         if (is_array($varName))
         {
@@ -357,7 +358,7 @@ class Template
             {
                 if ($key != '')
                 {
-                    $this->_vars[$key] = $val;
+                    $this->vars[$key] = $val;
                 }
             }
         }
@@ -365,7 +366,7 @@ class Template
         {
             if ($varName != '')
             {
-                $this->_vars[$varName] = $value;
+                $this->vars[$varName] = $value;
             }
         }
     }
@@ -382,14 +383,14 @@ class Template
     {
         if ($varName != '')
         {
-            $this->_vars[$varName] = &$value;
+            $this->vars[$varName] = &$value;
         }
     }
 
     /**
      * clear the given assigned template variable.
      *
-     * @param array|string $varName The template variable(s) to clear.
+     * @param string[]|string $varName The template variable(s) to clear.
      *
      * @return void
      */
@@ -399,17 +400,17 @@ class Template
         {
             foreach ($varName as $currVar)
             {
-                if (isset($this->_vars[$currVar]))
+                if (isset($this->vars[$currVar]))
                 {
-                    unset($this->_vars[$currVar]);
+                    unset($this->vars[$currVar]);
                 }
             }
         }
         else
         {
-            if (isset($this->_vars[$varName]))
+            if (isset($this->vars[$varName]))
             {
-                unset($this->_vars[$varName]);
+                unset($this->vars[$varName]);
             }
         }
     }
@@ -417,11 +418,11 @@ class Template
     /**
      * Echos the evaluated template to the browser.
      *
-     * @param string $templateName The name of the template to display.
+     * @param string|null $templateName The name of the template to display.
      *
      * @return void
      */
-    function display($templateName = NULL)
+    function display($templateName = null)
     {
         echo $this->get($templateName);
     }
@@ -433,37 +434,37 @@ class Template
      *
      * @return string Evaluated template.
      */
-    function get($templateName = NULL)
+    function get($templateName = null)
     {
-        if ($templateName == $this->_undefined)
+        if ($templateName == $this->undefined)
         {
-            if ($this->_compiledTemplate == $this->_undefined)
+            if ($this->compiledTemplate == $this->undefined)
             {
-                $this->_compiledTemplate = $this->compile($this->_template);
+                $this->compiledTemplate = $this->compile($this->template);
             }
 
-            if ($this->_evaledTemplate == $this->_undefined)
+            if ($this->evaledTemplate == $this->undefined)
             {
-                $this->_evaledTemplate = $this->evaluate($this->_compiledTemplate);
+                $this->evaledTemplate = $this->evaluate($this->compiledTemplate);
             }
 
-            return $this->_evaledTemplate;
+            return $this->evaledTemplate;
         }
 
-        if (!isset($this->_cachedTemplates["$templateName"])
-                || ($this->_cachedTemplates["$templateName"] == $this->_undefined))
+        if (!isset($this->cachedTemplates["$templateName"])
+                || ($this->cachedTemplates["$templateName"] == $this->undefined))
         {
-            $this->_cachedTemplates["$templateName"] = $this->cacheTemplate($templateName);
+            $this->cachedTemplates["$templateName"] = $this->cacheTemplate($templateName);
         }
 
-        return $this->evaluate($this->_cachedTemplates["$templateName"]);
+        return $this->evaluate($this->cachedTemplates["$templateName"]);
     }
 
     /**
      * Trigger template compile error.
      *
      * @param Exception  $exception Exception to be wrapped and thrown if
-     *                              $_showErrorMsg is enabled.
+     *                              $showErrorMsg is enabled.
      * @param integer    $errorType Type of error.
      *
      * @return void
@@ -473,7 +474,7 @@ class Template
      */
     function triggerError(Exception $exception, $errorType = E_USER_WARNING)
     {
-        if ($this->_showErrorMsg == TRUE)
+        if ($this->showErrorMsg == true)
         {
             throw new Exception("Dz_Template error", $errorType, $exception);
         }
@@ -521,7 +522,7 @@ class Template
      */
     protected function compile($rawData)
     {
-        if (($rawData == "") || ($rawData == $this->_undefined))
+        if (($rawData == "") || ($rawData == $this->undefined))
         {
             $this->triggerError(new InvalidArgumentException("template not set."));
             return "";
@@ -533,7 +534,7 @@ class Template
     /**
      * compiles the <if> tags of the template into its PHP equivalent
      *
-     * @param string $values The contents of the condition attribute
+     * @param string $values The contents of the condition attribute.
      *
      * @return string Compiled <if> tag.
      */
@@ -556,7 +557,7 @@ class Template
         }
         else
         {
-            $returnString = '<?php if ($this->_vars["'.$values.'"]) { ?>';
+            $returnString = '<?php if ($this->vars["'.$values.'"]) { ?>';
         }
 
         return $returnString;
@@ -610,7 +611,7 @@ class Template
         }
         else
         {
-            $returnString = '<?php $counter["'.$values.'"]= 1; foreach ($this->_vars["'.$values
+            $returnString = '<?php $counter["'.$values.'"]= 1; foreach ($this->vars["'.$values
                                 .'"] as $'.$values.') { $counter["'.$values.'"]= 1 - $counter["'
                                 .$values.'"]; ?>';
         }
@@ -679,7 +680,8 @@ class Template
     /**
      * Compiles the <cycle> tags of the template into its PHP equivalent.
      *
-     * @param string $values the name of the cycle.
+     * @param string $parent The name of the cycle's parent.
+     * @param string $values The name of the cycle.
      *
      * @return string Compiled <cycle> tag.
      */
@@ -724,7 +726,7 @@ class Template
         if ((is_array($temp)) && (count($temp) > 1))
         {
             $thing = '$'.$temp[count($temp) - 2].'["'.$temp[count($temp) - 1].'"]';
-            if ($this->safeCompiling == TRUE)
+            if ($this->safeCompiling == true)
             {
                 $returnString = '<?php if (isset('.$thing.')) { echo '.$thing.'; } ?>';
             }
@@ -735,14 +737,14 @@ class Template
         }
         else
         {
-            if ($this->safeCompiling == TRUE)
+            if ($this->safeCompiling == true)
             {
-                $returnString = '<?php if (isset($this->_vars["'.$values
-                                    .'"])) { echo $this->_vars["'.$values.'"]; } ?>';
+                $returnString = '<?php if (isset($this->vars["'.$values
+                                    .'"])) { echo $this->vars["'.$values.'"]; } ?>';
             }
             else
             {
-                $returnString = '<?php echo $this->_vars["'.$values.'"]; ?>';
+                $returnString = '<?php echo $this->vars["'.$values.'"]; ?>';
             }
         }
 
@@ -753,19 +755,19 @@ class Template
     /**
      * Evaluates the compiled template to raw HTML.
      *
-     * @param string $_compiledTemplate The actual PHP version of the template that is to be
+     * @param string $compiledTemplate The actual PHP version of the template that is to be
      *                                  evaluated.
      *
      * @return string Evaluated template.
      */
-    protected function evaluate($_compiledTemplate)
+    protected function evaluate($compiledTemplate)
     {
         ob_start();
-        eval("?".chr(62).$_compiledTemplate.chr(60)."?php ");
+        eval("?".chr(62).$compiledTemplate.chr(60)."?php ");
         $evaled = ob_get_contents();
         ob_end_clean();
 
-        $this->_resetVars();
+        $this->resetVars();
 
         return $evaled;
     }
