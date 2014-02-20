@@ -20,7 +20,7 @@ def is_value_repeated(row):
 def get_square(grid, r_index, c_index):
     "Returns square cell at r_index, c_index belongs to."
     return (grid[r_index][c_index:c_index + 3]
-            + grid[r_index + 1][c_index:c_index + 3] 
+            + grid[r_index + 1][c_index:c_index + 3]
             + grid[r_index + 2][c_index:c_index + 3])
 
 
