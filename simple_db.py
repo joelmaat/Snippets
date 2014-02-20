@@ -9,93 +9,93 @@ class SimpleDb(object):
 
     def __init__(self):
         "Initialize SimpleDb instance."
-        self.__db = {}
-        self.__value_frequency = {}
-        self.__num_open_transactions = 0
-        self.__transactions = {}
-        self.__transaction_value_frequency = {}
+        self._db = {}
+        self._value_frequency = {}
+        self._num_open_transactions = 0
+        self._transactions = {}
+        self._transaction_value_frequency = {}
 
     def put(self, name, value):
         "Inserts/updates value of name in database."
-        self.__update_value(name, value)
+        self._update_value(name, value)
 
     def get(self, name):
         "Returns value of name if it exists in the database, otherwise returns None."
-        if self.__isTransactionOpen() and name in self.__transactions:
-            return self.__transactions[name][self.__getLastKey(self.__transactions[name])]
-        elif name in self.__db:
-            return self.__db[name]
+        if self._is_transaction_open() and name in self._transactions:
+            return self._transactions[name][self._get_last_key(self._transactions[name])]
+        elif name in self._db:
+            return self._db[name]
         else:
             return None
 
     def get_num_equal_to(self, value):
         "Returns number of entries in the database that have the specified value."
-        t_val_freq = self.__transaction_value_frequency
-        return ((self.__value_frequency[value] if value in self.__value_frequency else 0) +
-                (t_val_freq[value] if self.__isTransactionOpen() and value in t_val_freq else 0))
+        t_val_freq = self._transaction_value_frequency
+        return ((self._value_frequency[value] if value in self._value_frequency else 0) +
+                (t_val_freq[value] if self._is_transaction_open() and value in t_val_freq else 0))
 
     def unset(self, name):
         "Removes name from database if it's present."
-        self.__update_value(name, None)
+        self._update_value(name, None)
 
     def begin(self):
         "Opens transaction block."
-        self.__num_open_transactions += 1
+        self._num_open_transactions += 1
 
     def rollback(self):
         "Rolls back most recent transaction, returning False if no open transactions."
-        if not self.__isTransactionOpen():
+        if not self._is_transaction_open():
             return False
-        for name in self.__transactions.keys():
-            if self.__num_open_transactions in self.__transactions[name]:
-                value = self.__transactions[name].pop(self.__num_open_transactions)
-                if not self.__transactions[name]:
-                    del self.__transactions[name]
-                self.__update_num_equal_to(value, self.get(name))
-        self.__num_open_transactions -= 1
+        for name in self._transactions.keys():
+            if self._num_open_transactions in self._transactions[name]:
+                value = self._transactions[name].pop(self._num_open_transactions)
+                if not self._transactions[name]:
+                    del self._transactions[name]
+                self._update_num_equal_to(value, self.get(name))
+        self._num_open_transactions -= 1
         return True
 
     def commit(self):
         "Commits all transactions, returning False if no open transactions."
-        if not self.__isTransactionOpen():
+        if not self._is_transaction_open():
             return False
-        self.__num_open_transactions = 0
-        any(self.__update_value(name, values[self.__getLastKey(values)])
-            for name, values in self.__transactions.iteritems())
-        self.__transactions = {}
-        self.__transaction_value_frequency = {}
+        self._num_open_transactions = 0
+        any(self._update_value(name, values[self._get_last_key(values)])
+            for name, values in self._transactions.iteritems())
+        self._transactions = {}
+        self._transaction_value_frequency = {}
         return True
 
-    def __getLastKey(self, ordered):
+    def _get_last_key(self, ordered):
         "Returns key (or value if list, etc) most recently added to ordered."
         return next(reversed(ordered)) if ordered else None
 
-    def __isTransactionOpen(self):
+    def _is_transaction_open(self):
         "Returns True if there is currently a pending transaction. Returns False otherwise."
-        return self.__num_open_transactions > 0
+        return self._num_open_transactions > 0
 
-    def __update_num_equal_to(self, current_value, new_value=None):
+    def _update_num_equal_to(self, current_value, new_value=None):
         "Swaps current_value (lowers count by 1) with new_value (add 1). Skips None values."
-        target = (self.__transaction_value_frequency if self.__isTransactionOpen() else
-                  self.__value_frequency)
+        target = (self._transaction_value_frequency if self._is_transaction_open() else
+                  self._value_frequency)
         for amount_to_add, value in [(-1, current_value), (1, new_value)]:
             if value is not None:
                 target.setdefault(value, 0)
                 target[value] += amount_to_add
 
-    def __update_value(self, name, value):
+    def _update_value(self, name, value):
         "Updates value (adding/editing/deleting) in database."
         current_value = self.get(name)
         if current_value == value:
             return
-        elif self.__isTransactionOpen():
-            self.__transactions.setdefault(name, OrderedDict())
-            self.__transactions[name][self.__num_open_transactions] = value
+        elif self._is_transaction_open():
+            self._transactions.setdefault(name, OrderedDict())
+            self._transactions[name][self._num_open_transactions] = value
         elif value is None:
-            del self.__db[name]
+            del self._db[name]
         else:
-            self.__db[name] = value
-        self.__update_num_equal_to(current_value, value)
+            self._db[name] = value
+        self._update_num_equal_to(current_value, value)
 
 
 def display(value, default=None):
@@ -104,18 +104,18 @@ def display(value, default=None):
 
 
 OPS = {
+    'SET':        (3, lambda db, name, value: db.put(name, value)),
     'GET':        (2, lambda db, name:        display(db.get(name), "NULL")),
     'NUMEQUALTO': (2, lambda db, value:       display(db.get_num_equal_to(value))),
     'UNSET':      (2, lambda db, name:        db.unset(name)),
     'BEGIN':      (1, lambda db:              db.begin()),
     'ROLLBACK':   (1, lambda db:              db.rollback() or display("NO TRANSACTION")),
     'COMMIT':     (1, lambda db:              db.commit() or display("NO TRANSACTION")),
-    'END':        (1, lambda db:              False),
-    'SET':        (3, lambda db, name, value: db.put(name, value)),
+    'END':        (1, lambda db:              False)
 }
 
 
-def process_command(simpleDb, command):
+def process_command(simple_db, command):
     "Applies command to the database. Returns False when stream of commands should end."
     command = command.split()
     opcode = command.pop(0).upper() if command else None
@@ -124,14 +124,14 @@ def process_command(simpleDb, command):
     elif 'END' == opcode:
         return False
     else:
-        OPS[opcode][1](simpleDb, *command)
+        OPS[opcode][1](simple_db, *command)
     return True
 
 
 def run():
     "Reads commands from the command line and passes them through for processing."
-    simpleDb = SimpleDb()
-    all(iter(lambda: process_command(simpleDb, raw_input()), False))
+    simple_db = SimpleDb()
+    all(iter(lambda: process_command(simple_db, raw_input()), False))
 
 run()
 
@@ -140,31 +140,31 @@ run()
 
 # Change run def to: def run(raw_input=raw_input):, then run
 
-def fakeInput(commands=None):
+def fake_input(commands=None):
     "Allows faking of stdin data."
-    def fromRawInput():
+    def from_raw_input():
         '''
-        Pass-thru for raw_input() (loops forever requesting data from raw_input()) that additionally
-        splits each raw_input() result on newlines. Without this raw_input() could potentially
-        return something like 'set a 1\nend' rather than 'set a 1' then 'end'.
+        Pass-thru for raw_input() (loops forever requesting data from raw_input()) that
+        additionally splits each raw_input() result on newlines. Without this raw_input() could
+        potentially return something like 'set a 1\nend' rather than 'set a 1' then 'end'.
         '''
         while True:
             for line in raw_input().split('\n'):
                 yield line
-    data = iter(commands.split('\n')) if commands else fromRawInput()
+    data = iter(commands.split('\n')) if commands else from_raw_input()
     return lambda: next(data)
 
 
 # 10 NULL 2 0 1 10 20 10 NULL 40 NO TRANSACTION 50 NULL 60 60 1 0 1
-run(fakeInput("SET ex 10 \n GET ex \n ""UNSET ex \n GET ex \n END"))
-run(fakeInput("SET a 10 \n SET b 10 \n NUMEQUALTO 10 \n NUMEQUALTO 20 \n SET b 30 \n "
-              "NUMEQUALTO 10 \n END"))
-run(fakeInput("BEGIN \n SET a 10 \n GET a \n BEGIN \n SET a 20 \n GET a \n ROLLBACK \n "
-              "GET a \n ROLLBACK \n GET a \n END"))
-run(fakeInput("BEGIN \n SET a 30 \n BEGIN \n SET a 40 \n COMMIT \n GET a \n ROLLBACK \n END"))
-run(fakeInput("SET a 50 \n BEGIN \n GET a \n SET a 60 \n BEGIN \n UNSET a \n GET a \n "
-              "ROLLBACK \n GET a \n COMMIT \n GET a \n END"))
-run(fakeInput("SET a 10 \n BEGIN \n NUMEQUALTO 10 \n BEGIN \n UNSET a \n NUMEQUALTO 10 \n "
-              "ROLLBACK \n NUMEQUALTO 10 \n COMMIT \n END"))
-run(fakeInput())
+run(fake_input("SET ex 10 \n GET ex \n ""UNSET ex \n GET ex \n END"))
+run(fake_input("SET a 10 \n SET b 10 \n NUMEQUALTO 10 \n NUMEQUALTO 20 \n SET b 30 \n "
+               "NUMEQUALTO 10 \n END"))
+run(fake_input("BEGIN \n SET a 10 \n GET a \n BEGIN \n SET a 20 \n GET a \n ROLLBACK \n "
+               "GET a \n ROLLBACK \n GET a \n END"))
+run(fake_input("BEGIN \n SET a 30 \n BEGIN \n SET a 40 \n COMMIT \n GET a \n ROLLBACK \n END"))
+run(fake_input("SET a 50 \n BEGIN \n GET a \n SET a 60 \n BEGIN \n UNSET a \n GET a \n "
+               "ROLLBACK \n GET a \n COMMIT \n GET a \n END"))
+run(fake_input("SET a 10 \n BEGIN \n NUMEQUALTO 10 \n BEGIN \n UNSET a \n NUMEQUALTO 10 \n "
+               "ROLLBACK \n NUMEQUALTO 10 \n COMMIT \n END"))
+run(fake_input())
 """
