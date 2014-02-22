@@ -12,11 +12,11 @@ def permutations(string):
     pop = todo.pop
     while todo:
         permutation, remaining = pop()
-        numLeft = len(remaining)
-        if numLeft < 2:
+        num_remaining = len(remaining)
+        if num_remaining < 2:
             yield permutation + remaining
         else:
-            for i in reversed(xrange(numLeft)):
+            for i in reversed(xrange(num_remaining)):
                 append((permutation + remaining[i], remaining[:i] + remaining[i + 1:]))
 
 
