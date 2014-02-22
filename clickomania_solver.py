@@ -19,7 +19,7 @@ class Grid(namedtuple('GridBase', 'num_rows num_columns num_colors bits')):
     def replace(self, **kwds):
         "Wrapper for _replace method."
         return super(Grid, self)._replace(**kwds)
-        
+
 
 def xy_to_bit_position(x_coord, y_coord, grid):
     """
@@ -76,7 +76,7 @@ def clear_cells(group, grid):
                               BLANK_CELL,
                               BITS_PER_COLOR,
                               xy_to_bit_position(x_coord, y_coord, grid))
-    return grid._replace(bits=bits)
+    return grid.replace(bits=bits)
 
 
 def collapse_grid(group, grid):
@@ -106,7 +106,7 @@ def collapse_grid(group, grid):
                     column |= BLANK_CELL
             bits = swap_bit_range(bits, column, bits_per_column, column_position)
 
-    return grid._replace(bits=bits)
+    return grid.replace(bits=bits)
 
 
 def get_groups(grid):
@@ -209,7 +209,7 @@ def run():
             position = xy_to_bit_position(x_coord, y_coord, grid)
             bits |= COLOR_TO_INDEX_MAPPING[row[y_coord]] << position
 
-    grid = grid._replace(bits=bits)
+    grid = grid.replace(bits=bits)
 
     moves_cache_file = 'JKJ_MOVES_CACHE'
     read_moves_cache_from_file(moves_cache_file)
