@@ -11,9 +11,15 @@ COLOR_TO_INDEX_MAPPING = {v: i for i, v in enumerate(COLORS)}
 BITS_PER_COLOR = (len(COLORS) - 1).bit_length()
 BLANK_GRID_BITS = BLANK_COLUMN_BITS = 0
 BLANK_CELL = COLOR_TO_INDEX_MAPPING['-']
-Grid = namedtuple('Grid', 'num_rows num_columns num_colors bits')
 MOVES_CACHE = {}
 
+
+class Grid(namedtuple('GridBase', 'num_rows num_columns num_colors bits')):
+    "Stores data about a Click-o-mania grid."
+    def replace(self, **kwds):
+        "Wrapper for _replace method."
+        return super(Grid, self)._replace(**kwds)
+        
 
 def xy_to_bit_position(x_coord, y_coord, grid):
     """
