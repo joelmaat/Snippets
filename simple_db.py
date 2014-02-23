@@ -22,7 +22,7 @@ class SimpleDb(object):
     def get(self, name):
         "Returns value of name if it exists in the database, otherwise returns None."
         if self._is_transaction_open() and name in self._transactions:
-            return self._transactions[name][self._get_last_key(self._transactions[name])]
+            return self._transactions[name][self.length(self._transactions[name])]
         elif name in self._db:
             return self._db[name]
         else:
@@ -138,20 +138,12 @@ run()
 """
 # Tests
 
-# Change run def to: def run(raw_input=raw_input):, then run
+# Change run def to ---- def run(raw_input=raw_input): ---- then run
 
 def fake_input(commands=None):
     "Allows faking of stdin data."
-    def from_raw_input():
-        '''
-        Pass-thru for raw_input() (loops forever requesting data from raw_input()) that
-        additionally splits each raw_input() result on newlines. Without this raw_input() could
-        potentially return something like 'set a 1\nend' rather than 'set a 1' then 'end'.
-        '''
-        while True:
-            for line in raw_input().split('\n'):
-                yield line
-    data = iter(commands.split('\n')) if commands else from_raw_input()
+    data = ((command for command in commands.split('\n')) if commands else
+            (line for block in raw_input().split('\n') for line in block.split('\n')))
     return lambda: next(data)
 
 
