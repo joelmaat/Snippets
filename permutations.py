@@ -1,4 +1,4 @@
-"String permutation generator to solve the Code Eval challenge."
+"String permutation generator to solve the CodeEval challenge."
 
 import sys
 
