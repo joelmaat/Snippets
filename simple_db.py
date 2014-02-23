@@ -22,7 +22,7 @@ class SimpleDb(object):
     def get(self, name):
         "Returns value of name if it exists in the database, otherwise returns None."
         if self._is_transaction_open() and name in self._transactions:
-            return self._transactions[name][self.length(self._transactions[name])]
+            return self._transactions[name][self._get_last_key(self._transactions[name])]
         elif name in self._db:
             return self._db[name]
         else:
