@@ -9,19 +9,16 @@ def permutations(string):
     length = len(string)
     while True:
         yield string
-
-        left = next((index - 1 for index in xrange(length - 1, 0, -1)
+        left = next((index - 1 
+                     for index in xrange(length - 1, 0, -1)
                      if string[index] > string[index - 1]),
                     None)
-
         if left is None:
             return
-
         right = next((index
                       for index in xrange(length - 1, left, -1)
                       if string[left] < string[index]),
                      left + 1)
-
         # Swap left and right characters, then reverse everything after left's original location.
         string = (string[:left]
                   + string[right:right + 1]
