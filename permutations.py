@@ -20,8 +20,4 @@ def permutations(string):
                 append((permutation + remaining[i], remaining[:i] + remaining[i + 1:]))
 
 
-WRITE = sys.stdout.write
-FLUSH = sys.stdout.flush
-for word in open(sys.argv[1], 'r'):
-    WRITE(','.join(permutations(word.rstrip())) + '\n')
-    FLUSH()
+sys.stdout.writelines(','.join(permutations(word.rstrip())) + '\n' for word in open(sys.argv[1], 'r'))
