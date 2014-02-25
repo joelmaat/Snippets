@@ -10,13 +10,13 @@ def permutations(string):
     while True:
         yield string
         left = next((index - 1 
-                     for index in xrange(length - 1, 0, -1)
+                     for index in reversed(xrange(1, length))
                      if string[index] > string[index - 1]),
                     None)
         if left is None:
             return
         right = next((index
-                      for index in xrange(length - 1, left, -1)
+                      for index in reversed(xrange(left + 1, length))
                       if string[left] < string[index]),
                      left + 1)
         # Swap left and right characters, then reverse everything after left's original location.
