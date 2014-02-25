@@ -16,7 +16,7 @@ def permutations(string):
         if left is None:
             return
         right = next((index
-                      for index in reversed(xrange(left + 1, length))
+                      for index in reversed(xrange(left + 2, length))
                       if string[left] < string[index]),
                      left + 1)
         # Swap left and right characters, then reverse everything after left's original location.
