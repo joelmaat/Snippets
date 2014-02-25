@@ -11,7 +11,7 @@ def permutations(string):
         yield string
         
         for index in reversed(xrange(1, length)):
-            if string[index] > string[index - 1]):
+            if string[index] > string[index - 1]:
                 left = index - 1
                 break
         else: return
