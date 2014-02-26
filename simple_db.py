@@ -93,6 +93,7 @@ class SimpleDb(object):
             self._db[name] = value
         self._update_num_equal_to(current_value, value)
 
+
 def get_last_key(ordered):
     "Returns key (or value if list, etc) most recently added to ordered."
     return next(reversed(ordered)) if ordered else None
