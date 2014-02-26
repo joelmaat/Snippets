@@ -11,7 +11,6 @@ COLOR_TO_INDEX_MAPPING = {v: i for i, v in enumerate(COLORS)}
 BITS_PER_COLOR = (len(COLORS) - 1).bit_length()
 BLANK_GRID_BITS = BLANK_COLUMN_BITS = 0
 BLANK_CELL = COLOR_TO_INDEX_MAPPING['-']
-MOVES_CACHE = {}
 
 
 class Grid(namedtuple('GridBase', 'num_rows num_columns num_colors bits')):
@@ -153,8 +152,13 @@ def get_incremental_moves(grid):
 
 def get_next_move(grid):
     "Returns x, y coordinate for next cell to collapse"
-    if grid in MOVES_CACHE:
-        return MOVES_CACHE[grid]
+    try:
+        return get_next_move.MOVES_CACHE[grid]
+    except AttributeError:
+        get_next_move.MOVES_CACHE = {}
+    except KeyError:
+        pass
+
     todo = []
     for collapsed, x_coord, y_coord, ngrid in get_incremental_moves(grid):
         heappush(todo, (-collapsed, ngrid, [(x_coord, y_coord, ngrid)]))
@@ -167,10 +171,10 @@ def get_next_move(grid):
         if -collapsed > best[-1]:
             best = (moves[0][0], moves[0][1], -collapsed)
         if cgrid.bits == BLANK_GRID_BITS:
-            MOVES_CACHE[grid] = moves[0][:2]
+            get_next_move.MOVES_CACHE[grid] = moves[0][:2]
             for i in range(1, len(moves)):
-                MOVES_CACHE[moves[i - 1][-1]] = moves[i][:2]
-            return MOVES_CACHE[grid]
+                get_next_move.MOVES_CACHE[moves[i - 1][-1]] = moves[i][:2]
+            return get_next_move.MOVES_CACHE[grid]
         for ncollapsed, nx_coord, ny_coord, ngrid in get_incremental_moves(cgrid):
             if ngrid not in tried:
                 tried.add(ngrid)
@@ -182,20 +186,22 @@ def get_next_move(grid):
 
 def read_moves_cache_from_file(filename):
     "Reads MOVES_CACHE from file if file exists."
-    global MOVES_CACHE
     try:
-        infile = open(filename, 'rb')
+        with open(filename, 'rb') as infile:
+            get_next_move.MOVES_CACHE = pickle.load(infile)
     except IOError:
         return
-    MOVES_CACHE = pickle.load(infile)
-    infile.close()
+    except EOFError:
+        return
 
 
 def save_moves_cache_to_file(filename):
-    "Saves MOVES_CACHE to file to avoid recomputation across calls."
-    outfile = open(filename, 'wb')
-    pickle.dump(MOVES_CACHE, outfile, -1)
-    outfile.close()
+    "Saves MOVES_CACHE to file to avoid recomputation across calls. Always creates a file."
+    try:
+        with open(filename, 'wb') as outfile:
+            pickle.dump(get_next_move.MOVES_CACHE, outfile, -1)
+    except AttributeError:
+        return
 
 
 def run():
