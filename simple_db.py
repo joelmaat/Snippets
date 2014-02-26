@@ -22,7 +22,7 @@ class SimpleDb(object):
     def get(self, name):
         "Returns value of name if it exists in the database, otherwise returns None."
         if self._is_transaction_open() and name in self._transactions:
-            return self._transactions[name][self._get_last_key(self._transactions[name])]
+            return self._transactions[name][get_last_key(self._transactions[name])]
         elif name in self._db:
             return self._db[name]
         else:
@@ -60,15 +60,11 @@ class SimpleDb(object):
         if not self._is_transaction_open():
             return False
         self._num_open_transactions = 0
-        any(self._update_value(name, values[self._get_last_key(values)])
+        any(self._update_value(name, values[get_last_key(values)])
             for name, values in self._transactions.iteritems())
         self._transactions = {}
         self._transaction_value_frequency = {}
         return True
-
-    def _get_last_key(self, ordered):
-        "Returns key (or value if list, etc) most recently added to ordered."
-        return next(reversed(ordered)) if ordered else None
 
     def _is_transaction_open(self):
         "Returns True if there is currently a pending transaction. Returns False otherwise."
@@ -97,6 +93,10 @@ class SimpleDb(object):
             self._db[name] = value
         self._update_num_equal_to(current_value, value)
 
+def get_last_key(ordered):
+    "Returns key (or value if list, etc) most recently added to ordered."
+    return next(reversed(ordered)) if ordered else None
+
 
 def display(value, default=None):
     "Prints value to stdout, or default if value is None and default is not None."
@@ -104,14 +104,14 @@ def display(value, default=None):
 
 
 OPS = {
-    'SET':        (3, lambda db, name, value: db.put(name, value)),
-    'GET':        (2, lambda db, name:        display(db.get(name), "NULL")),
-    'NUMEQUALTO': (2, lambda db, value:       display(db.get_num_equal_to(value))),
-    'UNSET':      (2, lambda db, name:        db.unset(name)),
-    'BEGIN':      (1, lambda db:              db.begin()),
-    'ROLLBACK':   (1, lambda db:              db.rollback() or display("NO TRANSACTION")),
-    'COMMIT':     (1, lambda db:              db.commit() or display("NO TRANSACTION")),
-    'END':        (1, lambda db:              False)
+    'SET':        (3, lambda db, command: db.put(command[0], command[1])),
+    'GET':        (2, lambda db, command: display(db.get(command[0]), "NULL")),
+    'NUMEQUALTO': (2, lambda db, command: display(db.get_num_equal_to(command[0]))),
+    'UNSET':      (2, lambda db, command: db.unset(command[0])),
+    'BEGIN':      (1, lambda db, command: db.begin()),
+    'ROLLBACK':   (1, lambda db, command: db.rollback() or display("NO TRANSACTION")),
+    'COMMIT':     (1, lambda db, command: db.commit() or display("NO TRANSACTION")),
+    'END':        (1, lambda db, command: False)
 }
 
 
@@ -124,7 +124,7 @@ def process_command(simple_db, command):
     elif 'END' == opcode:
         return False
     else:
-        OPS[opcode][1](simple_db, *command)
+        OPS[opcode][1](simple_db, command)
     return True
 
 
