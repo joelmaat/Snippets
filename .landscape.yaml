@@ -1,2 +1,3 @@
 doc-warnings: yes
-strictness: high
+strictness: veryhigh
+max-line-length: 120
