@@ -10,10 +10,10 @@ class SimpleDb(object):
     def __init__(self):
         "Initialize SimpleDb instance."
         self._db = {}
-        self._value_frequency = {}
+        self._value_count = {}
         self._num_open_transactions = 0
         self._transactions = {}
-        self._transaction_value_frequency = {}
+        self._transaction_value_count = {}
 
     def put(self, name, value):
         "Inserts/updates value of name in database."
@@ -28,11 +28,11 @@ class SimpleDb(object):
         else:
             return None
 
-    def get_num_equal_to(self, value):
+    def count(self, value):
         "Returns number of entries in the database that have the specified value."
-        t_val_freq = self._transaction_value_frequency
-        return ((self._value_frequency[value] if value in self._value_frequency else 0) +
-                (t_val_freq[value] if self._is_transaction_open() and value in t_val_freq else 0))
+        t_val_cnt = self._transaction_value_count
+        return ((self._value_count[value] if value in self._value_count else 0) +
+                (t_val_cnt[value] if self._is_transaction_open() and value in t_val_cnt else 0))
 
     def unset(self, name):
         "Removes name from database if it's present."
@@ -63,7 +63,7 @@ class SimpleDb(object):
         any(self._update_value(name, values[get_last_key(values)])
             for name, values in self._transactions.iteritems())
         self._transactions = {}
-        self._transaction_value_frequency = {}
+        self._transaction_value_count = {}
         return True
 
     def _is_transaction_open(self):
@@ -72,8 +72,8 @@ class SimpleDb(object):
 
     def _update_num_equal_to(self, current_value, new_value=None):
         "Swaps current_value (lowers count by 1) with new_value (add 1). Skips None values."
-        target = (self._transaction_value_frequency if self._is_transaction_open() else
-                  self._value_frequency)
+        target = (self._transaction_value_count if self._is_transaction_open() else
+                  self._value_count)
         for amount_to_add, value in [(-1, current_value), (1, new_value)]:
             if value is not None:
                 target.setdefault(value, 0)
@@ -106,7 +106,7 @@ def display(value, default=None):
 OPS = {
     'SET':        (3, lambda db, command: db.put(command[0], command[1])),
     'GET':        (2, lambda db, command: display(db.get(command[0]), "NULL")),
-    'NUMEQUALTO': (2, lambda db, command: display(db.get_num_equal_to(command[0]))),
+    'NUMEQUALTO': (2, lambda db, command: display(db.count(command[0]))),
     'UNSET':      (2, lambda db, command: db.unset(command[0])),
     'BEGIN':      (1, lambda db, command: db.begin()),
     'ROLLBACK':   (1, lambda db, command: db.rollback() or display("NO TRANSACTION")),
