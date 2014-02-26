@@ -1,6 +1,7 @@
 "Solver for 9x9 Sudoku puzzles."
 
 import random
+from itertools import izip, chain
 
 
 def are_cells_poorly_formed(cells):
@@ -36,7 +37,7 @@ def check_sudoku(grid):
     if is_row_poorly_formed(grid) or any(is_row_poorly_formed(row) or are_cells_poorly_formed(row)
                                          for row in grid):
         return None
-    return (not any(is_value_repeated(row) for row in grid + zip(*grid)) and
+    return (not any(is_value_repeated(row) for row in chain(grid, izip(*grid))) and
             not any(is_value_repeated(get_square(grid, r, c))
                     for r in [0, 3, 6]
                     for c in [0, 3, 6]))
@@ -95,7 +96,7 @@ def find_blank_cells(grid):
     "Returns indices of all empty cells and a set of valid values for each."
     universe = set(xrange(1, 10))
     rows = [universe - set(row) for row in grid]
-    columns = [universe - set(row) for row in zip(*grid)]
+    columns = [universe - set(row) for row in izip(*grid)]
     squares = [universe - set(get_square(grid, r, c))
                for r in [0, 3, 6]
                for c in [0, 3, 6]]
