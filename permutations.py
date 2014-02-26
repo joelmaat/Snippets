@@ -20,5 +20,5 @@ def permutations(string):
                 append((permutation + remaining[i], remaining[:i] + remaining[i + 1:]))
 
 
-sys.stdout.writelines(','.join(permutations(word.rstrip())) + '\n' 
+sys.stdout.writelines(','.join(permutations(word.rstrip())) + '\n'
                       for word in open(sys.argv[1], 'r'))
