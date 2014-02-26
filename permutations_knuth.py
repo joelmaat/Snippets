@@ -13,13 +13,13 @@ def permutations(string):
             if string[index] > string[index - 1]:
                 left = index - 1
                 break
-        else: 
+        else:
             return
         for index in reversed(xrange(left + 2, length)):
             if string[left] < string[index]:
                 right = index
                 break
-        else: 
+        else:
             right = left + 1
         # Swap left and right characters, then reverse everything after left's original location.
         string = (string[:left]
