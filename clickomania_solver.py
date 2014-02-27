@@ -3,6 +3,7 @@
 "Solves a Click-o-mania (Collapse) puzzle if a solution exists"
 
 from collections import namedtuple
+from itertools import ifilter
 from heapq import heappush, heappop
 import pickle
 
@@ -86,7 +87,7 @@ def collapse_grid(group, grid):
     bits_per_column = get_bits_per_column(grid)
     one_cell_mask = get_one_cell_mask()
     bits = grid.bits
-    for y_coord in xrange(grid.num_columns - 1, -1, -1):
+    for y_coord in reversed(xrange(grid.num_columns)):
         if y_coord not in y_coords:
             continue
         column_position = xy_to_bit_position(0, y_coord, grid)
@@ -140,7 +141,7 @@ def get_groups(grid):
                     groups += [[]]
                 groups[group] += [(x_coord, y_coord)]
                 grouped[(x_coord, y_coord, color)] = group
-    return [group for group in groups if group]
+    return ifilter(None, groups)
 
 
 def get_incremental_moves(grid):
@@ -158,30 +159,31 @@ def get_next_move(grid):
         get_next_move.MOVES_CACHE = {}
     except KeyError:
         pass
+    moves = get_all_moves(grid)
+    cache = get_next_move.MOVES_CACHE
+    cache[grid] = moves[0][:2]
+    for i in xrange(1, len(moves)):
+        cache[moves[i - 1][-1]] = moves[i][:2]
+    return cache[grid]
 
+
+def get_all_moves(grid):
     todo = []
     for collapsed, x_coord, y_coord, ngrid in get_incremental_moves(grid):
         heappush(todo, (-collapsed, ngrid, [(x_coord, y_coord, ngrid)]))
     tried = set([grid]) | set(ngrid for _, _, moves in todo for _, _, ngrid in moves)
-    x_coord, y_coord = 0, 0
-    best = (x_coord, y_coord, 0)
     while todo:
         collapsed, _, moves = heappop(todo)
-        x_coord, y_coord, cgrid = moves[-1]
-        if -collapsed > best[-1]:
-            best = (moves[0][0], moves[0][1], -collapsed)
+        _, _, cgrid = moves[-1]
         if cgrid.bits == BLANK_GRID_BITS:
-            get_next_move.MOVES_CACHE[grid] = moves[0][:2]
-            for i in range(1, len(moves)):
-                get_next_move.MOVES_CACHE[moves[i - 1][-1]] = moves[i][:2]
-            return get_next_move.MOVES_CACHE[grid]
+            return moves
         for ncollapsed, nx_coord, ny_coord, ngrid in get_incremental_moves(cgrid):
             if ngrid not in tried:
                 tried.add(ngrid)
                 ncollapsed = collapsed - ncollapsed
                 heappush(todo, (ncollapsed, ngrid, moves + [(nx_coord, ny_coord, ngrid)]))
 
-    return best[:-1]
+    return moves
 
 
 def read_moves_cache_from_file(filename):
