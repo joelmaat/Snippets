@@ -81,8 +81,8 @@ def clear_cells(group, grid):
 
 def collapse_grid(group, grid):
     "Find blank columns and remove. Compact columns"
-    y_coords = set(y_coord for x_coord, y_coord in group)
-    x_coords = set(x_coord for x_coord, y_coord in group)
+    y_coords = {y_coord for x_coord, y_coord in group}
+    x_coords = {x_coord for x_coord, y_coord in group}
     column_mask = get_one_column_mask(grid)
     bits_per_column = get_bits_per_column(grid)
     one_cell_mask = get_one_cell_mask()
@@ -133,8 +133,8 @@ def get_groups(grid):
                         else:
                             other = grouped[position]
                             groups[group] += groups[other]
-                            grouped.update(((ox_coord, oy_coord, color), group)
-                                           for ox_coord, oy_coord in groups[other])
+                            for ox_coord, oy_coord in groups[other]:
+                                grouped[(ox_coord, oy_coord, color)] = group
                             groups[other] = None
                 if group is None:
                     group = len(groups)
@@ -152,37 +152,36 @@ def get_incremental_moves(grid):
 
 
 def get_next_move(grid):
-    "Returns x, y coordinate for next cell to collapse"
+    "Returns the x, y coordinates of a cell in the group to collapse."
     try:
         return get_next_move.MOVES_CACHE[grid]
     except AttributeError:
         get_next_move.MOVES_CACHE = {}
     except KeyError:
         pass
-    moves = get_all_moves(grid)
-    cache = get_next_move.MOVES_CACHE
-    cache[grid] = moves[0][:2]
-    for i in xrange(1, len(moves)):
-        cache[moves[i - 1][-1]] = moves[i][:2]
-    return cache[grid]
+    get_next_move.MOVES_CACHE.update(get_all_moves(grid))
+    return get_next_move.MOVES_CACHE[grid]
 
 
 def get_all_moves(grid):
+    "Returns a list of grid states and the x, y coordinates of the group to collapse."
     todo = []
-    for collapsed, x_coord, y_coord, ngrid in get_incremental_moves(grid):
-        heappush(todo, (-collapsed, ngrid, [(x_coord, y_coord, ngrid)]))
-    tried = set([grid]) | set(ngrid for _, _, moves in todo for _, _, ngrid in moves)
+    tried = {grid}
+    moves = []
+    for num_removed, x_coord, y_coord, new_grid in get_incremental_moves(grid):
+        heappush(todo, (-num_removed, new_grid, [(grid, (x_coord, y_coord)), (new_grid, (0, 0))]))
+        tried |= {new_grid}
     while todo:
-        collapsed, _, moves = heappop(todo)
-        _, _, cgrid = moves[-1]
-        if cgrid.bits == BLANK_GRID_BITS:
-            return moves
-        for ncollapsed, nx_coord, ny_coord, ngrid in get_incremental_moves(cgrid):
-            if ngrid not in tried:
-                tried.add(ngrid)
-                ncollapsed = collapsed - ncollapsed
-                heappush(todo, (ncollapsed, ngrid, moves + [(nx_coord, ny_coord, ngrid)]))
-
+        num_removed, _, moves = heappop(todo)
+        current_grid = moves[-1][0]
+        if current_grid.bits == BLANK_GRID_BITS:
+            break
+        for new_num_removed, x_coord, y_coord, new_grid in get_incremental_moves(current_grid):
+            if new_grid not in tried:
+                tried |= {new_grid}
+                new_num_removed = num_removed - new_num_removed
+                moves[-1] = (current_grid, (x_coord, y_coord))
+                heappush(todo, (new_num_removed, new_grid, moves + [(new_grid, (0, 0))]))
     return moves
 
 
@@ -231,7 +230,7 @@ def run():
 """
 # Tests
 
-# Change run def to: def run(raw_input=raw_input):, then run
+# Change run def to: def run(raw_input):, then run
 
 def show_grid(grid):
     "Graphical representation of grid"
