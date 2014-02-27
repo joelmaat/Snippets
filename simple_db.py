@@ -22,7 +22,7 @@ class SimpleDb(object):
     def get(self, name):
         "Returns value of name if it exists in the database, otherwise returns None."
         if self._is_transaction_open() and name in self._transactions:
-            return self._transactions[name][get_last_key(self._transactions[name])]
+            return self._transactions[name][SimpleDb._get_last_key(self._transactions[name])]
         elif name in self._db:
             return self._db[name]
         else:
@@ -60,11 +60,16 @@ class SimpleDb(object):
         if not self._is_transaction_open():
             return False
         self._num_open_transactions = 0
-        any(self._update_value(name, values[get_last_key(values)])
+        any(self._update_value(name, values[SimpleDb._get_last_key(values)])
             for name, values in self._transactions.iteritems())
         self._transactions = {}
         self._transaction_value_count = {}
         return True
+
+    @staticmethod
+    def _get_last_key(ordered):
+        "Returns key (or value if list, etc) most recently added to ordered."
+        return next(reversed(ordered)) if ordered else None
 
     def _is_transaction_open(self):
         "Returns True if there is currently a pending transaction. Returns False otherwise."
@@ -92,11 +97,6 @@ class SimpleDb(object):
         else:
             self._db[name] = value
         self._update_num_equal_to(current_value, value)
-
-
-def get_last_key(ordered):
-    "Returns key (or value if list, etc) most recently added to ordered."
-    return next(reversed(ordered)) if ordered else None
 
 
 def display(value, default=None):
