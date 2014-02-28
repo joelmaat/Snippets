@@ -154,13 +154,13 @@ def get_incremental_moves(grid):
 def get_next_move(grid):
     "Returns the x, y coordinates of a cell in the group to collapse."
     try:
-        return get_next_move.MOVES_CACHE[grid]
+        return get_next_move.moves_cache[grid]
     except AttributeError:
-        get_next_move.MOVES_CACHE = {}
+        get_next_move.moves_cache = {}
     except KeyError:
         pass
-    get_next_move.MOVES_CACHE.update(get_all_moves(grid))
-    return get_next_move.MOVES_CACHE[grid]
+    get_next_move.moves_cache.update(get_all_moves(grid))
+    return get_next_move.moves_cache[grid]
 
 
 def get_all_moves(grid):
@@ -186,10 +186,10 @@ def get_all_moves(grid):
 
 
 def read_moves_cache_from_file(filename):
-    "Reads MOVES_CACHE from file if file exists."
+    "Reads moves_cache from file if file exists."
     try:
         with open(filename, 'rb') as infile:
-            get_next_move.MOVES_CACHE = pickle.load(infile)
+            get_next_move.moves_cache = pickle.load(infile)
     except IOError:
         return
     except EOFError:
@@ -197,10 +197,10 @@ def read_moves_cache_from_file(filename):
 
 
 def save_moves_cache_to_file(filename):
-    "Saves MOVES_CACHE to file to avoid recomputation across calls. Always creates a file."
+    "Saves moves_cache to file to avoid recomputation across calls. Always creates a file."
     try:
         with open(filename, 'wb') as outfile:
-            pickle.dump(get_next_move.MOVES_CACHE, outfile, -1)
+            pickle.dump(get_next_move.moves_cache, outfile, -1)
     except AttributeError:
         return
 
@@ -218,7 +218,7 @@ def run():
 
     grid = grid.replace(bits=bits)
 
-    moves_cache_file = 'JKJ_MOVES_CACHE'
+    moves_cache_file = 'jkj_moves_cache'
     read_moves_cache_from_file(moves_cache_file)
 
     x_coord, y_coord = get_next_move(grid)
