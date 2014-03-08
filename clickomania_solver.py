@@ -17,6 +17,7 @@ BLANK_CELL = COLOR_TO_INDEX_MAPPING['-']
 class Grid(namedtuple('GridBase', 'num_rows num_columns num_colors bits')):
     "Stores data about a Click-o-mania grid."
     __slots__ = ()
+    
     def replace(self, **kwds):
         "Wrapper for _replace method."
         return super(Grid, self)._replace(**kwds)
